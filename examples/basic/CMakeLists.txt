@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(basic)
+teensy_include_directories(../../src)
+teensy_add_executable(basic midiread.ino)
+teensy_target_link_libraries(basic midi_smf_writer SD SdFat SPI cores)
+target_link_libraries(basic.elf stdc++)

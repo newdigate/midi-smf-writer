@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.5)
+
+project(midi_smf_writer C CXX)
+
+if (NOT DEFINED TEENSY_VERSION)
+    set(BUILD_FOR_LINUX 1)
+    add_definitions(-DBUILD_FOR_LINUX)
+endif()
+
+if (NOT DEFINED BUILD_FOR_LINUX)   
+    import_arduino_library(cores ${COREPATH} avr debug util)
+    import_arduino_library(SPI ${DEPSPATH}/SPI)
+    import_arduino_library(SdFat ${DEPSPATH}/SdFat/src common DigitalIO ExFatLib FatLib FsLib iostream SdCard SpiDriver)
+    import_arduino_library(SD ${DEPSPATH}/SD/src)
+    add_subdirectory(src)
+    add_subdirectory(examples)
+else()
+    set(CMAKE_CXX_STANDARD 14)
+    find_package(teensy_x86_stubs REQUIRED)
+    find_package(teensy_x86_sd_stubs REQUIRED)
+    add_subdirectory(src)
+    add_subdirectory(test)    
+endif()
