@@ -13,7 +13,11 @@ class SmfWriter
     void writeHeader();
     void addEvent(unsigned int deltaticks, byte a, byte b, byte c, byte d);
     void flush();
-    
+    static unsigned int get_microseconds_per_tick(double bpm) {
+        double micros_per_beat = 60000000.0 / bpm;
+        unsigned int micros_per_tick = micros_per_beat / 480;
+        return micros_per_tick;
+    }
   private:
     byte _buffer[50];
     byte _bufferPos = 0;
