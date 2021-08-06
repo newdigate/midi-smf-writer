@@ -45,8 +45,8 @@ void SmfWriter::write_buf_byte(byte b) {
 void SmfWriter::setFilename(const char* filename) {
   flush();
 
-  sprintf(_filename, "%s.mid", filename);
-  _filename[strlen(filename)] = 0;
+  sprintf(_filename, "%s.mid\0", filename);
+  
   int count = 1;
   while (SD.exists(_filename)) {
     //Serial.printf("'%s' already exists...\n", _filename);   
@@ -57,7 +57,7 @@ void SmfWriter::setFilename(const char* filename) {
 }
 
 void SmfWriter::writeHeader() {
-  for (unsigned int i=0; i<sizeof(header); i++)
+  for (unsigned int i=0; i < 18; i++)
     write_buf_byte(header[i]);
   flush();
 }
@@ -73,31 +73,31 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte type, byte data1, byte da
   } else {
     //Serial.print("[");
 
-    std::vector<byte*> q;
+
+    uint16_t lengthFieldSize;
     byte b[4];
     
     for (int i = 3; i >= 0; i--) {
-        b[i] = (byte)(deltaticks & 0x7f);
+        byte next = (byte)(deltaticks & 0x7f);
   
         if(i < 3)
-            b[i] |= 0x80;
+            next |= 0x80;
 
-        q.push_back(&b[i]);
-        //Serial.printf("push %d: /%x/ \n", i, b[i]);
-        //trackSize += 1;
-        
+        b[i] = next;
+     
         deltaticks >>= 7;
-  
+        lengthFieldSize++;
+
         if (deltaticks < 1)
             break;
     }
 
-    while (q.size() > 0) {
-      byte b = *(q.back());
-      q.pop_back();
+    for( int i=0; i < lengthFieldSize; i++) {  
+      byte tempb = b[4-lengthFieldSize+i];
+      //q.pop_back();
       //Serial.printf("pop /%x/ \n", b);
       
-      write_buf_byte(b);
+      write_buf_byte(tempb);
       trackSize += 1;
 
       //char buffer [9];
@@ -124,18 +124,11 @@ void SmfWriter::flush() {
         Serial.println();
         return;
     }
-
-    for (byte b = 0; b < _bufferPos; b++) {
-        data.write(_buffer[b]);
-    }
+    data.write(_buffer, _bufferPos);
     _bufferPos = 0;
 
     data.seek(18);
     write_buf_int(trackSize);
-    for (byte b = 0; b < _bufferPos; b++) {
-        data.write(_buffer[b]);
-    }
-    _bufferPos = 0;
 
     data.close();
 }
