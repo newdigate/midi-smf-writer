@@ -1,5 +1,4 @@
 #include "smfwriter.h"
-#include <vector>
 
 const byte header[] = {
      0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06,
@@ -57,8 +56,12 @@ void SmfWriter::setFilename(const char* filename) {
 }
 
 void SmfWriter::writeHeader() {
+  // first 18 bytes of static header
   for (unsigned int i=0; i < 18; i++)
     write_buf_byte(header[i]);
+
+  // we write zero to the length of the midi track to begin with  
+  write_buf_int(0);
   flush();
 }
 
@@ -74,7 +77,7 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte type, byte data1, byte da
     //Serial.print("[");
 
 
-    uint16_t lengthFieldSize;
+    uint16_t lengthFieldSize = 0;
     byte b[4];
     
     for (int i = 3; i >= 0; i--) {
@@ -116,7 +119,7 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte type, byte data1, byte da
 
 void SmfWriter::flush() {
     if (_bufferPos == 0) return;
-    File data = SD.open(_filename, O_WRITE);
+    File data = SD.open(_filename, O_WRITE | O_APPEND);
     if (!data) {
         char *notAbleToOpen = const_cast<char *>("Not able to open ");
         Serial.print(notAbleToOpen);
@@ -125,10 +128,16 @@ void SmfWriter::flush() {
         return;
     }
     data.write(_buffer, _bufferPos);
-    _bufferPos = 0;
-
-    data.seek(18);
-    write_buf_int(trackSize);
-
     data.close();
+    _bufferPos = 0;
+    if (trackSize > 0) {
+      // go back and update the 0'th midi track length
+      data = SD.open(_filename, O_READ | O_WRITE);
+      data.seek(18);
+
+      write_buf_int(trackSize);
+      data.write(_buffer, _bufferPos);
+      _bufferPos = 0;
+      data.close();
+    }
 }
