@@ -39,7 +39,7 @@ jobs:
           path: midi-smf-reader
 
       - name: download dependencies
-        run: sudo apt-get update && sudo apt-get install -yq libboost-test-dev  libxml2-utils
+        run: sudo apt-get update && sudo apt-get install -yq libboost-test-dev  libxml2-utils libxslt-dev
 
       - name: Make and Install Dependencies
         run: cd teensy-x86-stubs && mkdir cmake-build-$BUILD_TYPE && cd cmake-build-$BUILD_TYPE && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. && sudo make install
@@ -87,6 +87,7 @@ jobs:
           mkdir output
           build/test/tests --output_format=XML --report_level=detailed  2> output/test-results.xml
           xmllint --format output/test-results.xml > output/test-results-formatted.xml
+          xsltproc test/boost-to-junit-xml.xslt output/test-results.xml > output/junit-test-results.xml
 
       - name: upload artifacts
         if: always()      
@@ -99,4 +100,4 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
         with:
-          files: output/*.xml
+          files: output/junit-test-results.xml
