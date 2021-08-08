@@ -170,8 +170,8 @@ void SmfWriter::addSetTempo(unsigned int deltaticks, double tempo) {
   uint8_t nn = microseconds_per_quarter_note >> 16;
   uint8_t dd = microseconds_per_quarter_note >> 8;
   uint8_t cc = microseconds_per_quarter_note & 0xFF;
-  byte data[5] = { 0xFF, 0x51, nn, dd, cc};
-  addEvent(deltaticks, data, 5);
+  byte data[6] = { 0xFF, 0x51, 0x03, nn, dd, cc};
+  addEvent(deltaticks, data, 6);
 }
 
 void SmfWriter::addEndofTrack(unsigned int deltaticks, byte trackNumber) {

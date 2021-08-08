@@ -90,4 +90,39 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
 
     }
 
+    BOOST_FIXTURE_TEST_CASE(can_write_tempo_change, DefaultTestFixture) {
+
+        SD.setSDCardFolderPath("output");
+
+        system("echo ${PWD}");
+
+        SmfWriter writer;
+        char *actualFileName = new char[50];
+
+        writer.setFilename("test");
+        sprintf(actualFileName, "%s", writer.getFilename());
+        writer.writeHeader();
+        writer.addSetTempo(0, 140.0);
+        writer.flush();
+
+        midireader reader;
+        reader.open(actualFileName);
+
+        double microsPerTick = get_microseconds_per_tick(120.0);
+
+        int totalNumNotesRead = 0;
+
+        std::vector<midimessage> messages;
+        populateMessagesFromReader(reader, messages);
+
+        BOOST_CHECK_EQUAL(reader.getNumTracks(), 1);
+        BOOST_CHECK_EQUAL(messages.size(), 1);
+
+        BOOST_CHECK_EQUAL(messages[0].channel, 0);
+        BOOST_CHECK_EQUAL(messages[0].isTempoChange, true);
+        BOOST_CHECK_EQUAL(messages[0].delta_ticks, 0);
+        BOOST_CHECK_EQUAL(messages[0].tempo, 140.0);
+    }
+
+
 BOOST_AUTO_TEST_SUITE_END()
