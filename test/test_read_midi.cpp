@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         writer.setFilename("test");
         sprintf(actualFileName, "%s", writer.getFilename());
         writer.writeHeader();
-        writer.addEvent(0, 0x90, 54, 127, 0);
+        writer.addNoteOnEvent(0, 0, 54, 127);
         writer.flush();
 
         midireader reader;
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         writer.setFilename("test");
         sprintf(actualFileName, "%s", writer.getFilename());
         writer.writeHeader();
-        writer.addEvent(1000, 0x90, 54, 127, 0);
+        writer.addNoteOnEvent(1000, 0, 54, 127);
         writer.flush();
 
         midireader reader;
