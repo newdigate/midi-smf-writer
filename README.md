@@ -6,15 +6,10 @@
 
 c++ standard midi file (smf) writer for linux (`amd64 arch`) and teensy (`32 bit arm cortex m7 thumb arch`)  
 
-* **Work in progress**
 
 ## credits
-##### Don't Run Unit Tests on the Arduino Device or Emulator
-* [stackoverflow 11437456](https://stackoverflow.com/a/11437456)
-* includes code from [IronSavior/dsm2_tx](https://github.com/IronSavior/dsm2_tx)
-
-##### cmake uninstaller
-*  [gist.github.com/royvandam/3033428](https://gist.github.com/royvandam/3033428)
+* [Standard MIDI file format](http://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html)
+* cmake uninstaller: [gist.github.com/royvandam/3033428](https://gist.github.com/royvandam/3033428)
 
 ## license
 Unless specified in source code file, all code is MIT license.
