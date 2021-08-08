@@ -8,8 +8,8 @@ void setup() {
     //writer.setTempo(120.0);
     //double microsPerTick = writer.get_microseconds_per_tick();
 
-    writer.addEvent(0, 0x90, 64, 127, 0);
-    writer.addEvent(480, 0x90, 64, 127, 0 );
+    writer.addNoteOnEvent(0, 0, 64, 127);
+    writer.addNoteOnEvent(480, 0, 64, 127 );
     writer.flush();
 }
 
