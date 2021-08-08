@@ -80,13 +80,13 @@ jobs:
           pwd
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{github.workspace}}
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
-          mkdir ../output
-          test/tests --output_format=XML --report_level=detailed  2> ../output/test-results.xml
-          xmllint --format ../output/test-results.xml > ../output/test-results-formatted.xml
+          mkdir output
+          build/test/tests --output_format=XML --report_level=detailed  2> output/test-results.xml
+          xmllint --format output/test-results.xml > output/test-results-formatted.xml
 
       - name: upload artifacts
         if: always()      
