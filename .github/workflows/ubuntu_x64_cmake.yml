@@ -39,7 +39,7 @@ jobs:
           path: midi-smf-reader
 
       - name: download dependencies
-        run: sudo apt-get update && sudo apt-get install -yq libboost-test-dev  libxml2-utils libxslt-dev
+        run: sudo apt-get update && sudo apt-get install -yq libboost-test-dev  libxml2-utils xsltproc
 
       - name: Make and Install Dependencies
         run: cd teensy-x86-stubs && mkdir cmake-build-$BUILD_TYPE && cd cmake-build-$BUILD_TYPE && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. && sudo make install
