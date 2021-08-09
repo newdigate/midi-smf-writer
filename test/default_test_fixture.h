@@ -9,6 +9,7 @@ struct DefaultTestFixture
     DefaultTestFixture()
     {
         initialize_mock_arduino();
+        system("echo current working directory: ${PWD}");
     }
 
 };

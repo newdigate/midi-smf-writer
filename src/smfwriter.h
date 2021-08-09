@@ -22,7 +22,7 @@ class SmfWriter
     void addAfterTouch(unsigned int deltaticks, byte noteNumber, byte pressure, byte channel);
     void addKeySignature(unsigned int deltaticks, byte sf, uint8_t mi );
     void addTimeSignature(unsigned int deltaticks, byte nn, byte dd, byte cc, byte bb);
-    void addSMPTEOffset(unsigned int deltaticks, uint8_t hr, uint8_t mn ,uint8_t se,uint8_t fr, uint8_t ff );
+    void addSMPTEOffset(unsigned int deltaticks, byte hr, byte mn, byte se, byte fr, byte ff );
     void addSetTempo(unsigned int deltaticks, double tempo);
     void addEndofTrack(unsigned int deltaticks, byte trackNumber);
     void addSequenceNumber(unsigned int deltaticks, byte sequenceNumber);

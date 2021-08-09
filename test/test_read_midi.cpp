@@ -11,13 +11,13 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         return micros_per_tick;
     }
 
-    void populateMessagesFromReader(midireader &reader, std::vector<midimessage> &messages) {
+    void populateMessagesFromReader(midireader &reader, std::vector<smfmidimessage*> &messages) {
         for (int t = 0; t < reader.getNumTracks(); t++)
         {
             reader.setTrackNumber(t);
-            midimessage midiMessage {};
-            while (reader.read(midiMessage)) {
-                messages.push_back(midiMessage);
+            smfmidimessage *message; 
+            while ((message = reader.read()) != nullptr) {
+                messages.push_back(message);
             }
         }
     }
@@ -25,8 +25,6 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
     BOOST_FIXTURE_TEST_CASE(can_write_basic_note, DefaultTestFixture) {
 
         SD.setSDCardFolderPath("output");
-
-        system("echo ${PWD}");
 
         SmfWriter writer;
 
@@ -41,24 +39,22 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         midireader reader;
         reader.open(actualFileName);
 
-        std::vector<midimessage> messages;
+        std::vector<smfmidimessage*> messages;
         populateMessagesFromReader(reader, messages);
 
         BOOST_CHECK_EQUAL(reader.getNumTracks(), 1);
         BOOST_CHECK_EQUAL(messages.size(), 1);
 
-        BOOST_CHECK_EQUAL(messages[0].channel, 0);
-        BOOST_CHECK_EQUAL(messages[0].isTempoChange, false);
-        BOOST_CHECK_EQUAL(messages[0].delta_ticks, 0);
-        BOOST_CHECK_EQUAL(messages[0].key, 54);
-        BOOST_CHECK_EQUAL(messages[0].velocity, 127);
+        BOOST_CHECK_EQUAL(messages[0]->delta_ticks, 0);
+        BOOST_CHECK_EQUAL(messages[0]->getMessageType(), smftype_channelvoicemessage);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->status, 0x90);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->data1, 54);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->data2, 127);
     }
 
     BOOST_FIXTURE_TEST_CASE(can_write_delayed_note, DefaultTestFixture) {
 
         SD.setSDCardFolderPath("output");
-
-        system("echo ${PWD}");
 
         SmfWriter writer;
         char *actualFileName = new char[50];
@@ -72,29 +68,24 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         midireader reader;
         reader.open(actualFileName);
 
-        double microsPerTick = get_microseconds_per_tick(120.0);
-
         int totalNumNotesRead = 0;
 
-        std::vector<midimessage> messages;
+        std::vector<smfmidimessage*> messages;
         populateMessagesFromReader(reader, messages);
 
         BOOST_CHECK_EQUAL(reader.getNumTracks(), 1);
         BOOST_CHECK_EQUAL(messages.size(), 1);
 
-        BOOST_CHECK_EQUAL(messages[0].channel, 0);
-        BOOST_CHECK_EQUAL(messages[0].isTempoChange, false);
-        BOOST_CHECK_EQUAL(messages[0].delta_ticks, 1000);
-        BOOST_CHECK_EQUAL(messages[0].key, 54);
-        BOOST_CHECK_EQUAL(messages[0].velocity, 127);
-
+        BOOST_CHECK_EQUAL(messages[0]->delta_ticks, 1000);
+        BOOST_CHECK_EQUAL(messages[0]->getMessageType(), smftype_channelvoicemessage);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->status, 0x90);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->data1, 54);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->data2, 127);
     }
 
     BOOST_FIXTURE_TEST_CASE(can_write_tempo_change, DefaultTestFixture) {
 
         SD.setSDCardFolderPath("output");
-
-        system("echo ${PWD}");
 
         SmfWriter writer;
         char *actualFileName = new char[50];
@@ -108,20 +99,47 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
         midireader reader;
         reader.open(actualFileName);
 
-        double microsPerTick = get_microseconds_per_tick(120.0);
+        int totalNumNotesRead = 0;
+
+        std::vector<smfmidimessage*> messages;
+        populateMessagesFromReader(reader, messages);
+
+        BOOST_CHECK_EQUAL(reader.getNumTracks(), 1);
+        BOOST_CHECK_EQUAL(messages.size(), 1);
+        BOOST_CHECK_EQUAL(messages[0]->delta_ticks, 0);
+        BOOST_CHECK_EQUAL(messages[0]->getMessageType(), smftype_settempomessage);
+        BOOST_CHECK_EQUAL( ((smfsettempomessage*) messages[0])->microseconds_per_quarter_note, 428571);
+        BOOST_CHECK_EQUAL( (long) ((smfsettempomessage*) messages[0])->getTempo(), 140);
+    }
+
+    BOOST_FIXTURE_TEST_CASE(can_write_program_change, DefaultTestFixture) {
+
+        SD.setSDCardFolderPath("output");
+
+        SmfWriter writer;
+        char *actualFileName = new char[50];
+
+        writer.setFilename("test");
+        sprintf(actualFileName, "%s", writer.getFilename());
+        writer.writeHeader();
+        writer.addProgramChange(0, 100, 0);
+        writer.flush();
+
+        midireader reader;
+        reader.open(actualFileName);
 
         int totalNumNotesRead = 0;
 
-        std::vector<midimessage> messages;
+        std::vector<smfmidimessage *> messages;
         populateMessagesFromReader(reader, messages);
 
         BOOST_CHECK_EQUAL(reader.getNumTracks(), 1);
         BOOST_CHECK_EQUAL(messages.size(), 1);
 
-        BOOST_CHECK_EQUAL(messages[0].channel, 0);
-        BOOST_CHECK_EQUAL(messages[0].isTempoChange, true);
-        BOOST_CHECK_EQUAL(messages[0].delta_ticks, 0);
-        BOOST_CHECK_EQUAL(messages[0].tempo, 140.0);
+        BOOST_CHECK_EQUAL(messages[0]->delta_ticks, 0);
+        BOOST_CHECK_EQUAL(messages[0]->getMessageType(), smftype_channelvoicemessage);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->status, 0xD0);
+        BOOST_CHECK_EQUAL( ((smfchannelvoicemessage*) messages[0])->data1,  100);
     }
 
 

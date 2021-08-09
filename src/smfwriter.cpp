@@ -160,7 +160,7 @@ void SmfWriter::addTimeSignature(unsigned int deltaticks, byte nn, byte dd, byte
   addEvent(deltaticks, data, 6);
 }
 
-void SmfWriter::addSMPTEOffset(unsigned int deltaticks, uint8_t hr, uint8_t mn ,uint8_t se, uint8_t fr, uint8_t ff ) {
+void SmfWriter::addSMPTEOffset(unsigned int deltaticks, byte hr, byte mn, byte se, byte fr, byte ff ) {
   byte data[6] = {0x80, hr, mn, se, fr, ff };
   addEvent(deltaticks, data, 6);
 }
