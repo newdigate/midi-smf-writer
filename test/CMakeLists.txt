@@ -3,14 +3,9 @@ project(tests CXX C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(teensy_x86_stubs)
-include_directories(${teensy_x86_stubs_INCLUDE_DIR})
-
-find_package(teensy_x86_sd_stubs)
-include_directories(${teensy_x86_sd_stubs_INCLUDE_DIR})
-
-find_package(midi_smf_reader)
-include_directories(${midi_smf_reader_INCLUDE_DIR})
+find_library(teensy_x86_stubs NAME teensy_x86_stubs)
+find_library(teensy_x86_sd_stubs NAME teensy_x86_sd_stubs)
+find_library(midi_smf_reader NAME midi_smf_reader)
 
 set (Boost_USE_STATIC_LIBS OFF)
 find_package (Boost REQUIRED COMPONENTS unit_test_framework)
