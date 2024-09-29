@@ -273,6 +273,8 @@ void SmfWriter::flush() {
   int flushWithErrors = flushWithErrorHandling();
   if (flushWithErrors != 0) {
     _error = flushWithErrors;
+    _hasError = true;
   } else
     _error = 0;
+    _hasError = false;
 }
