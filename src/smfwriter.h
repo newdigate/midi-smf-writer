@@ -34,8 +34,17 @@ class SmfWriter
     void addInstrumentName(unsigned int deltaticks, const char* text);  // FF 04
     void addLyricText(unsigned int deltaticks, const char* text);       // FF 05
     void addMarkerText(unsigned int deltaticks, const char* text);      // FF 06
-    void addCuePointText(unsigned int deltaticks, const char* text);    // FF 07 
+    void addCuePointText(unsigned int deltaticks, const char* text);    // FF 07
     void flush();
+    int flushWithErrorHandling();
+
+    bool isError() const {
+        return _hasError;
+    }
+
+    int getErrorNumber() const {
+        return _error;
+    }
     
     static unsigned int get_microseconds_per_tick(double bpm) {
         double micros_per_beat = 60000000.0 / bpm;
@@ -47,6 +56,8 @@ class SmfWriter
     byte _bufferPos = 0;
     char _filename[80];
     unsigned long trackSize = 0;
+    bool _hasError = false;
+    unsigned _error = 0;
 
     void write_buf_int(unsigned int data);
     void write_buf_byte(byte a);

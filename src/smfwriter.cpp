@@ -228,27 +228,51 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
   addMetaText(deltaticks, 07, text);
 }
 
-void SmfWriter::flush() {
-    if (_bufferPos == 0) return;
-    File data = SD.open(_filename, O_WRITE | O_APPEND);
-    if (!data) {
-        char *notAbleToOpen = const_cast<char *>("Not able to open ");
-        Serial.print(notAbleToOpen);
-        Serial.print(_filename);
-        Serial.println();
-        return;
-    }
-    data.write(_buffer, _bufferPos);
-    data.close();
-    _bufferPos = 0;
-    if (trackSize > 0) {
-      // go back and update the 0'th midi track length
-      data = SD.open(_filename, O_READ | O_WRITE);
-      data.seek(18);
+int SmfWriter::flushWithErrorHandling() {
+  if (_bufferPos == 0)
+      return 0;
+  File data = SD.open(_filename, O_WRITE | O_APPEND);
+  if (!data) {
+    char *notAbleToOpen = const_cast<char *>("Not able to open ");
+    Serial.print(notAbleToOpen);
+    Serial.print(_filename);
+    Serial.println();
+    return 1;
+  }
+  size_t dataWrittenSize = data.write(_buffer, _bufferPos);
+  data.close();
 
-      write_buf_int(trackSize);
-      data.write(_buffer, _bufferPos);
-      _bufferPos = 0;
-      data.close();
+  _bufferPos = 0;
+  bool errorWhenOpening = false;
+  if (trackSize > 0) {
+    // go back and update the 0'th midi track length
+    data = SD.open(_filename, O_READ | O_WRITE);
+    if(!data) {
+      errorWhenOpening = true;
     }
+    data.seek(18);
+
+    write_buf_int(trackSize);
+    data.write(_buffer, _bufferPos);
+    _bufferPos = 0;
+    data.close();
+  }
+
+  if (dataWrittenSize != _bufferPos) {
+    return 2;
+  }
+
+  if (errorWhenOpening) {
+    return 3;
+  }
+
+  return true;
+}
+
+void SmfWriter::flush() {
+  int flushWithErrors = flushWithErrorHandling();
+  if (flushWithErrors != 0) {
+    _error = flushWithErrors;
+  } else
+    _error = 0;
 }
