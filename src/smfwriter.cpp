@@ -48,11 +48,12 @@ void SmfWriter::setFilename(const char* filename) {
   
   int count = 1;
   while (SD.exists(_filename)) {
-    Serial.printf("'%s' already exists...\n", _filename);
     sprintf(_filename, "%s%i.mid", filename, count);
     count++;
   }
-  Serial.printf("using filename '%s'\n", _filename);
+  Serial.print("using filename ");
+  Serial.print(_filename);
+  Serial.println();
 }
 
 void SmfWriter::writeHeader() {
