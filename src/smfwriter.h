@@ -51,6 +51,10 @@ class SmfWriter
         unsigned int micros_per_tick = micros_per_beat / 480;
         return micros_per_tick;
     }
+
+    unsigned getBytesWritten() const {
+        return _bytesWritten;
+    }
   private:
     byte _buffer[50];
     byte _bufferPos = 0;
@@ -58,6 +62,7 @@ class SmfWriter
     unsigned long trackSize = 0;
     bool _hasError = false;
     unsigned _error = 0;
+    unsigned _bytesWritten = 0;
 
     void write_buf_int(unsigned int data);
     void write_buf_byte(byte a);

@@ -51,6 +51,15 @@ void SmfWriter::setFilename(const char* filename) {
     sprintf(_filename, "%s%i.mid", filename, count);
     count++;
   }
+  File file = SD.open(_filename, O_CREAT);
+  if (!file) {
+    Serial.println("Failed to create file!!");
+    _error = 5;
+    _hasError = true;
+  } else {
+    file.close();
+  }
+  _bytesWritten = 0;
   Serial.print("using filename ");
   Serial.print(_filename);
   Serial.println();
@@ -232,7 +241,7 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
 int SmfWriter::flushWithErrorHandling() {
   if (_bufferPos == 0)
       return 0;
-  File data = SD.open(_filename, O_WRITE | O_APPEND | O_CREAT);
+  File data = SD.open(_filename, O_APPEND);
   if (!data) {
     char *notAbleToOpen = const_cast<char *>("Not able to open ");
     Serial.print(notAbleToOpen);
@@ -241,6 +250,7 @@ int SmfWriter::flushWithErrorHandling() {
     return 1;
   }
   size_t dataWrittenSize = data.write(_buffer, _bufferPos);
+  _bytesWritten += dataWrittenSize;
   data.close();
 
   _bufferPos = 0;
