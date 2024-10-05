@@ -51,7 +51,7 @@ void SmfWriter::setFilename(const char* filename) {
     sprintf(_filename, "%s%i.mid", filename, count);
     count++;
   }
-  File file = SD.open(_filename, O_CREAT);
+  File file = SD.open(_filename, FILE_WRITE);
   if (!file) {
     Serial.println("Failed to create file!!");
     _error = 5;
