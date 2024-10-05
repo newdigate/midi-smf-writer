@@ -241,7 +241,7 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
 int SmfWriter::flushWithErrorHandling() {
   if (_bufferPos == 0)
       return 0;
-  File data = SD.open(_filename, O_APPEND);
+  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
   if (!data) {
     char *notAbleToOpen = const_cast<char *>("Not able to open ");
     Serial.print(notAbleToOpen);
@@ -281,6 +281,7 @@ int SmfWriter::flushWithErrorHandling() {
 }
 
 void SmfWriter::flush() {
+  Serial.printf("Bytes written: %i\n", _bytesWritten);
   int flushWithErrors = flushWithErrorHandling();
   if (flushWithErrors != 0) {
     _error = flushWithErrors;
