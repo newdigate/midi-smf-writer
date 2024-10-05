@@ -281,7 +281,8 @@ int SmfWriter::flushWithErrorHandling() {
 }
 
 void SmfWriter::flush() {
-  Serial.printf("Bytes written: %i\n", _bytesWritten);
+  Serial.print("Bytes written: ");
+  Serial.println( _bytesWritten);
   int flushWithErrors = flushWithErrorHandling();
   if (flushWithErrors != 0) {
     _error = flushWithErrors;
