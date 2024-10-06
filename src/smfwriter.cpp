@@ -259,7 +259,9 @@ int SmfWriter::flushWithErrorHandling() {
   _bytesWritten += dataWrittenSize;
   printf("1. written %d\n", (unsigned) dataWrittenSize);
   _bufferPos = 0;
+  data.close();
 
+  data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
   addEndofTrack(120, 0);
   dataWrittenSize = data.write(_buffer, _bufferPos);
   printf("2. written %d\n", (unsigned) dataWrittenSize);
