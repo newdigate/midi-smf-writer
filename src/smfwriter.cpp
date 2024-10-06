@@ -253,31 +253,45 @@ int SmfWriter::flushWithErrorHandling() {
   _bytesWritten += dataWrittenSize;
   data.close();
 
+  if (dataWrittenSize != _bufferPos) {
+    return 2;
+  }
+
   _bufferPos = 0;
   bool errorWhenOpening = false;
   if (trackSize > 0) {
     // go back and update the 0'th midi track length
-    data = SD.open(_filename, O_READ | O_WRITE);
+#ifdef BUILD_FOR_LINUX
+    data = SD.open(_filename,  O_READ | O_WRITE);
+#else
+    data = SD.open(_filename,  O_WRITE);
+#endif
+
     if(!data) {
       errorWhenOpening = true;
+      Serial.print("Failed to update length");
+    } else {
+      data.seek(18);
+
+      write_buf_int(trackSize);
+      Serial.print("TrackSize ");
+      Serial.println(trackSize);
+
+      data.write(_buffer, _bufferPos);
+      Serial.print("_bufferPos ");
+      Serial.println(_bufferPos);
+      _bufferPos = 0;
+      data.close();
     }
-    data.seek(18);
-
-    write_buf_int(trackSize);
-    data.write(_buffer, _bufferPos);
-    _bufferPos = 0;
-    data.close();
   }
 
-  if (dataWrittenSize != _bufferPos) {
-    return 2;
-  }
+
 
   if (errorWhenOpening) {
     return 3;
   }
 
-  return true;
+  return 0;
 }
 
 void SmfWriter::flush() {
