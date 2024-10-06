@@ -240,8 +240,14 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
 
 int SmfWriter::flushWithErrorHandling() {
   if (_bufferPos == 0)
-      return 0;
-  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+    return 0;
+//  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+  File data = SD.open(_filename, O_READ | O_WRITE);
+  if (data.size() > 4) {
+    data.seek(data.size()-4);
+    printf("seek to %d\n", data.size()-4);
+  }
+
   if (!data) {
     char *notAbleToOpen = const_cast<char *>("Not able to open ");
     Serial.print(notAbleToOpen);
@@ -251,13 +257,17 @@ int SmfWriter::flushWithErrorHandling() {
   }
   size_t dataWrittenSize = data.write(_buffer, _bufferPos);
   _bytesWritten += dataWrittenSize;
+  printf("1. written %d\n", (unsigned) dataWrittenSize);
+  _bufferPos = 0;
+
+  addEndofTrack(120, 0);
+  dataWrittenSize = data.write(_buffer, _bufferPos);
+  printf("2. written %d\n", (unsigned) dataWrittenSize);
+  _bufferPos = 0;
   data.close();
 
-  if (dataWrittenSize != _bufferPos) {
-    return 2;
-  }
+  printf("total = %d\n", (unsigned) _bytesWritten);
 
-  _bufferPos = 0;
   bool errorWhenOpening = false;
   if (trackSize > 0) {
     // go back and update the 0'th midi track length
@@ -273,7 +283,7 @@ int SmfWriter::flushWithErrorHandling() {
     } else {
       data.seek(18);
 
-      write_buf_int(trackSize);
+      write_buf_int(trackSize + 4); // plus 4 is the extra end of track marker
       Serial.print("TrackSize ");
       Serial.println(trackSize);
 
