@@ -8,7 +8,7 @@ const byte header[] = {
      0x4d, 0x54, 0x72, 0x6B
 };
 
-SmfWriter::SmfWriter(){
+SmfWriter::SmfWriter() {
 }
 
 char* SmfWriter::getFilename() {
@@ -56,6 +56,7 @@ void SmfWriter::setFilename(const char* filename) {
     Serial.println("Failed to create file!!");
     _error = 5;
     _hasError = true;
+    return;
   } else {
     file.close();
   }
@@ -73,6 +74,35 @@ void SmfWriter::writeHeader() {
   // we write zero to the length of the midi track to begin with  
   write_buf_int(0);
   flush();
+}
+void SmfWriter::close()
+{
+    flush();
+    if (trackSize > 0) {
+        // go back and update the 0'th midi track length
+#ifdef BUILD_FOR_LINUX
+        File data = SD.open(_filename,  O_READ | O_WRITE);
+#else
+        File data = SD.open(_filename,  O_WRITE);
+#endif
+
+        if(!data) {
+            Serial.print("Failed to update length");
+        } else {
+            data.seek(18);
+
+            write_buf_int(trackSize); // plus 4 is the extra end of track marker
+            Serial.print("TrackSize ");
+            Serial.println(trackSize);
+
+            data.write(_buffer, _bufferPos);
+            Serial.print("_bufferPos ");
+            Serial.println(_bufferPos);
+            _bufferPos = 0;
+            data.close();
+            trackSize = 0;
+        }
+    }
 }
 
 void SmfWriter::write_buf_var_int(unsigned int deltaticks) {
@@ -108,6 +138,8 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte *data, unsigned int lengt
     write_buf_byte(data[i]);
   }
   trackSize += length;
+  if (_bufferPos > 40)
+      flush();
 }
 
 void SmfWriter::addNoteOnEvent(unsigned int deltaticks, byte channel, byte key, byte velocity) {
@@ -241,12 +273,12 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
 int SmfWriter::flushWithErrorHandling() {
   if (_bufferPos == 0)
     return 0;
-//  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
-  File data = SD.open(_filename, O_READ | O_WRITE);
+  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+  /*File data = SD.open(_filename, O_READ | O_WRITE);
   if (data.size() > 4) {
     data.seek(data.size()-4);
-    printf("seek to %d\n", data.size()-4);
-  }
+    // printf("seek to %d\n", data.size()-4);
+  }*/
 
   if (!data) {
     char *notAbleToOpen = const_cast<char *>("Not able to open ");
@@ -257,52 +289,19 @@ int SmfWriter::flushWithErrorHandling() {
   }
   size_t dataWrittenSize = data.write(_buffer, _bufferPos);
   _bytesWritten += dataWrittenSize;
-  printf("1. written %d\n", (unsigned) dataWrittenSize);
+  //printf("1. written %d\n", (unsigned) dataWrittenSize);
   _bufferPos = 0;
   data.close();
 
-  data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+  /*data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
   addEndofTrack(120, 0);
   dataWrittenSize = data.write(_buffer, _bufferPos);
   printf("2. written %d\n", (unsigned) dataWrittenSize);
   _bufferPos = 0;
   data.close();
+   */
 
-  printf("total = %d\n", (unsigned) _bytesWritten);
-
-  bool errorWhenOpening = false;
-  if (trackSize > 0) {
-    // go back and update the 0'th midi track length
-#ifdef BUILD_FOR_LINUX
-    data = SD.open(_filename,  O_READ | O_WRITE);
-#else
-    data = SD.open(_filename,  O_WRITE);
-#endif
-
-    if(!data) {
-      errorWhenOpening = true;
-      Serial.print("Failed to update length");
-    } else {
-      data.seek(18);
-
-      write_buf_int(trackSize + 4); // plus 4 is the extra end of track marker
-      Serial.print("TrackSize ");
-      Serial.println(trackSize);
-
-      data.write(_buffer, _bufferPos);
-      Serial.print("_bufferPos ");
-      Serial.println(_bufferPos);
-      _bufferPos = 0;
-      data.close();
-    }
-  }
-
-
-
-  if (errorWhenOpening) {
-    return 3;
-  }
-
+  //printf("total = %d\n", (unsigned) _bytesWritten);
   return 0;
 }
 
@@ -313,7 +312,8 @@ void SmfWriter::flush() {
   if (flushWithErrors != 0) {
     _error = flushWithErrors;
     _hasError = true;
-  } else
-    _error = 0;
-    _hasError = false;
+  } else {
+      _error = 0;
+      _hasError = false;
+  }
 }

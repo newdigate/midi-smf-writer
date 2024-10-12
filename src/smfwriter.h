@@ -11,6 +11,7 @@ class SmfWriter
     void setFilename(const char* filename);
     char* getFilename();
     void writeHeader();
+    void close();
     void addEvent(unsigned int deltaticks, byte *data, unsigned int length);
     void addNoteOnEvent(unsigned int deltaticks, byte channel, byte key, byte velocity);
     void addNoteOffEvent(unsigned int deltaticks, byte channel, byte key);
