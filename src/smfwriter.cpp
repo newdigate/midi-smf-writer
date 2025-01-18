@@ -1,7 +1,8 @@
 #include "smfwriter.h"
 
 const byte header[] = {
-     0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06,
+     0x4d, 0x54, 0x68, 0x64,
+     0x00, 0x00, 0x00, 0x06,
      0x00, 0x00, // single-track format
      0x00, 0x01, // one track
      0x01, 0xE0, // 480 ticks per quarter 0x1E0
@@ -33,6 +34,15 @@ void SmfWriter::write_buf_int(unsigned int data) {
   //Serial.printf("%x\n", b);
   write_buf_byte( b );
 }
+
+void SmfWriter::write_buf_short(unsigned short data) {
+    byte b = data >> 8;
+    write_buf_byte( b );
+
+    b = data;
+    write_buf_byte( b );
+}
+
 
 void SmfWriter::write_buf_byte(byte b) {
   if (_bufferPos > 40) {
@@ -67,9 +77,12 @@ void SmfWriter::setFilename(const char* filename) {
 }
 
 void SmfWriter::writeHeader() {
-  // first 18 bytes of static header
-  for (unsigned int i=0; i < 18; i++)
-    write_buf_byte(header[i]);
+    // first 18 bytes of static header
+    for (unsigned int i=0; i < 12; i++)
+        write_buf_byte(header[i]);
+    write_buf_short(_ticksPerBeat);
+    for (unsigned int i=14; i < 18; i++)
+        write_buf_byte(header[i]);
 
   // we write zero to the length of the midi track to begin with  
   write_buf_int(0);
