@@ -10,7 +10,7 @@ class SmfWriter
     SmfWriter();
     void setFilename(const char* filename);
     char* getFilename();
-    void writeHeader();
+    void writeHeader() ;
     void close();
     void addEvent(unsigned int deltaticks, byte *data, unsigned int length);
     void addNoteOnEvent(unsigned int deltaticks, byte channel, byte key, byte velocity);
@@ -47,15 +47,24 @@ class SmfWriter
         return _error;
     }
     
-    static unsigned int get_microseconds_per_tick(double bpm) {
+    unsigned int get_microseconds_per_tick(double bpm) {
         double micros_per_beat = 60000000.0 / bpm;
-        unsigned int micros_per_tick = micros_per_beat / 480;
+        unsigned int micros_per_tick = micros_per_beat / _ticksPerBeat;
         return micros_per_tick;
     }
 
     unsigned getBytesWritten() const {
         return _bytesWritten;
     }
+
+    unsigned short getTicksPerBeat() const {
+        return _ticksPerBeat;
+    }
+
+    void setTicksPerBeat(unsigned short ticksPerBeat) {
+        _ticksPerBeat = ticksPerBeat;
+    }
+
   private:
     byte _buffer[50];
     byte _bufferPos = 0;
@@ -64,8 +73,10 @@ class SmfWriter
     bool _hasError = false;
     unsigned _error = 0;
     unsigned _bytesWritten = 0;
+    unsigned short _ticksPerBeat=480;
 
     void write_buf_int(unsigned int data);
+    void write_buf_short(unsigned short data);
     void write_buf_byte(byte a);
     void write_buf_var_int(unsigned int data);
 };

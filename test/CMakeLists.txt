@@ -13,11 +13,11 @@ include_directories (${Boost_INCLUDE_DIRS})
 
 include_directories(../src)
 
-add_executable(tests
+add_executable(midi_smf_writer_tests
         test_read_midi.cpp)
 
-target_link_libraries(tests midi_smf_writer)
-target_link_libraries(tests ${midi_smf_reader_LIBS})
-target_link_libraries(tests ${teensy_x86_stubs_LIBS})
-target_link_libraries(tests ${teensy_x86_sd_stubs_LIBS})
-target_link_libraries(tests ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+target_link_libraries(midi_smf_writer_tests midi_smf_writer)
+target_link_libraries(midi_smf_writer_tests midi_smf_reader)
+target_link_libraries(midi_smf_writer_tests teensy_x86_stubs)
+target_link_libraries(midi_smf_writer_tests teensy_x86_sd_stubs)
+target_link_libraries(midi_smf_writer_tests ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})

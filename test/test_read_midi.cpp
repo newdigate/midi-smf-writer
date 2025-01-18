@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
 
     BOOST_FIXTURE_TEST_CASE(can_write_basic_note, DefaultTestFixture) {
 
-        SD.setSDCardFolderPath("output");
+        SD.setSDCardFolderPath("output", true);
 
         SmfWriter writer;
 
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
 
     BOOST_FIXTURE_TEST_CASE(can_write_delayed_note, DefaultTestFixture) {
 
-        SD.setSDCardFolderPath("output");
+        SD.setSDCardFolderPath("output", true);
 
         SmfWriter writer;
         char *actualFileName = new char[50];
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
 
     BOOST_FIXTURE_TEST_CASE(can_write_tempo_change, DefaultTestFixture) {
 
-        SD.setSDCardFolderPath("output");
+        SD.setSDCardFolderPath("output", true);
 
         SmfWriter writer;
         char *actualFileName = new char[50];
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_SUITE(basic_midi_write_test)
 
     BOOST_FIXTURE_TEST_CASE(can_write_program_change, DefaultTestFixture) {
 
-        SD.setSDCardFolderPath("output");
+        SD.setSDCardFolderPath("output", true);
 
         SmfWriter writer;
         char *actualFileName = new char[50];
