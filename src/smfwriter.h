@@ -66,8 +66,8 @@ class SmfWriter
     }
 
   private:
-    byte _buffer[50];
-    byte _bufferPos = 0;
+    byte _buffer[1024];
+    short _bufferPos = 0;
     char _filename[80];
     unsigned long trackSize = 0;
     bool _hasError = false;

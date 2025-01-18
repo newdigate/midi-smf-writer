@@ -45,7 +45,7 @@ void SmfWriter::write_buf_short(unsigned short data) {
 
 
 void SmfWriter::write_buf_byte(byte b) {
-  if (_bufferPos > 40) {
+  if (_bufferPos > 1000) {
     flush();
   }
   _buffer[_bufferPos++] = b;
@@ -151,7 +151,7 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte *data, unsigned int lengt
     write_buf_byte(data[i]);
   }
   trackSize += length;
-  if (_bufferPos > 40)
+  if (_bufferPos > 1000)
       flush();
 }
 
