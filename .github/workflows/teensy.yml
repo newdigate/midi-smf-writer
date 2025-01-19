@@ -51,7 +51,7 @@ jobs:
 
     - uses: actions/checkout@v2
       with:
-        repository: FortySevenEffects/arduino_midi_library.git
+        repository: PaulStoffregen/MIDI.git
         path: deps/MIDI
         fetch-depth: 1
         ref: master
