@@ -61,7 +61,7 @@ jobs:
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
           mkdir output
-          vmidi_smf_writer_tests --output_format=XML --report_level=detailed  > output/test-results.xml
+          midi_smf_writer_tests --output_format=XML --report_level=detailed  > output/test-results.xml
           xmllint --format output/test-results.xml > output/test-results-formatted.xml
           xsltproc test/boost-to-junit-xml.xslt output/test-results.xml > output/junit-test-results.xml
 
