@@ -1,11 +1,8 @@
 #include <Arduino.h>
 #include "smfwriter.h"
-#if BUILD_FOR_LINUX
-#define SD_SELECT 1
-#define SPI_FULL_SPEED 3
-#endif
+
 void setup() {
-    if (!SD.begin(SD_SELECT, SPI_FULL_SPEED))
+    if (!SD.begin())
     {
         Serial.println("SD init failed!");
         while (true) ;

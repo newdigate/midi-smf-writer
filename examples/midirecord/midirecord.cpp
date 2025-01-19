@@ -1,13 +1,8 @@
 #include <Arduino.h>
 #include <MIDI.h>
 #include "smfwriter.h"
-#if BUILD_FOR_LINUX
-#define SD_SELECT 1
-#define SPI_FULL_SPEED 3
-#endif
 
 #ifdef BUILD_FOR_LINUX
-#define SDCARD_SS_PIN 0
 #include "RtMidiMIDI.h"
 #include "RtMidiTransport.h"
 MIDI_CREATE_RTMIDI_INSTANCE(RtMidiMIDI, rtMIDI,  MIDI);
@@ -85,7 +80,7 @@ void reset() {
 void setup() {
     Serial.begin(9600);
 
-    if (!SD.begin(SD_SELECT, SPI_FULL_SPEED))
+    if (!SD.begin())
     {
         Serial.println("SD init failed!");
         while (true) ;
