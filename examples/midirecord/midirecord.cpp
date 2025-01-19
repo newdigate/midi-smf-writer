@@ -116,7 +116,7 @@ void loop() {
 
 #ifdef BUILD_FOR_LINUX
 int main(int, char**) {
-    SD.setSDCardFolderPath("/Users/moolet/Development/github/newdigate/midi-smf-writer/cmake-build-debug");
+    SD.setSDCardFolderPath("./output");
     setup();
     while(true) loop();
 }
