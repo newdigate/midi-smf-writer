@@ -6,11 +6,7 @@
 #include "RtMidiMIDI.h"
 #include "RtMidiTransport.h"
 MIDI_CREATE_RTMIDI_INSTANCE(RtMidiMIDI, rtMIDI,  MIDI);
-using TMidiTransport = RtMidiTransport<RtMidiMIDI>;
-using TMidi = midi::MidiInterface<TMidiTransport>;
 #else
-using TMidiTransport = midi::SerialMIDI<arduino::HardwareSerial>;
-using TMidi = midi::MidiInterface<TMidiTransport>;
 MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
