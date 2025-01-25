@@ -5,7 +5,8 @@ set(SOURCE_FILES
         smfwriter.cpp)
 
 set(HEADER_FILES
-        smfwriter.h)
+        smfwriter.h
+        DeltaTimeSequencer.h)
 
 if (DEFINED BUILD_FOR_LINUX)    
         include(CMakeLists.linux.cmake)
