@@ -10,6 +10,10 @@ public:
             _microsPerTick(microsPerTick),
             _startTimingOnFirstEvent(startTimingOnFirstEvent) {
     }
+    DeltaTimeSequencer(double atempo, unsigned short ticksPerBeat, bool startTimingOnFirstEvent) :
+            _microsPerTick(get_microseconds_per_tick(atempo, ticksPerBeat)),
+            _startTimingOnFirstEvent(startTimingOnFirstEvent) {
+    }
 
     void stop() {
         _startMicroseconds = 0;
