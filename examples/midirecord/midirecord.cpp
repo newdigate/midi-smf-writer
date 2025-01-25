@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <MIDI.h>
 #include "smfwriter.h"
+#include "DeltaTimeSequencer.h"
 
 #ifdef BUILD_FOR_LINUX
 #include "RtMidiMIDI.h"
 #include "RtMidiTransport.h"
-#include "DeltaTimeSequencer.h"
+
 
 MIDI_CREATE_RTMIDI_INSTANCE(RtMidiMIDI, rtMIDI,  MIDI);
 #else
