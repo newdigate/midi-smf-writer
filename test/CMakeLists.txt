@@ -10,7 +10,7 @@ include_directories (${Boost_INCLUDE_DIRS})
 include_directories(../src)
 
 add_executable(midi_smf_writer_tests
-        test_read_midi.cpp)
+        test_read_midi.cpp test_deltatimesequencer.cpp)
 
 target_link_libraries(midi_smf_writer_tests midi_smf_writer)
 target_link_libraries(midi_smf_writer_tests midi_smf_reader)

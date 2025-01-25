@@ -5,72 +5,57 @@
 #ifdef BUILD_FOR_LINUX
 #include "RtMidiMIDI.h"
 #include "RtMidiTransport.h"
+#include "DeltaTimeSequencer.h"
+
 MIDI_CREATE_RTMIDI_INSTANCE(RtMidiMIDI, rtMIDI,  MIDI);
 #else
 MIDI_CREATE_DEFAULT_INSTANCE();
 #endif
 
 SmfWriter writer;
-unsigned long startMicroseconds = 0, lastTick = 0, lastMicroseconds = 0;
-double tempo = 120.0;
+double atempo = 120.0;
+unsigned short resolution = 480;
+unsigned lastMicroseconds = 0;
 
-unsigned update_ticks_and_return_delta() {
-    const auto currentMicros = micros();
-    if (startMicroseconds == 0) {
-        Serial.println("!***** Recording Started!");
-        startMicroseconds = currentMicros;
-        lastMicroseconds = currentMicros;
-        lastTick = 0;
-        return 0;
-    }
-
-    const auto deltaMicros = currentMicros - startMicroseconds;
-    unsigned ticks = deltaMicros / writer.getTicksPerBeat();
-    auto delta = ticks - lastTick;
-    lastTick = ticks;
-    lastMicroseconds = currentMicros;
-    return delta;
-}
-
+DeltaTimeSequencer deltaTimeSequencer(atempo, resolution, true);
 
 void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addNoteOnEvent(deltaTicks, channel, pitch, velocity);
 }
 void handleNoteOff(uint8_t channel, uint8_t pitch, uint8_t velocity) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addNoteOffEvent(deltaTicks, channel, pitch);
 }
 void handleAfterTouchPoly(byte inChannel, byte inNote, byte inValue) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addAfterTouch(deltaTicks, inNote, inValue, inChannel);
 }
 void handleControlChange(byte inChannel, byte inNumber, byte inValue) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addControlChange(deltaTicks, inNumber, inValue, inChannel);
 }
 void handleProgramChange(byte inChannel, byte inNumber) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addProgramChange(deltaTicks, inNumber, inChannel);
 }
 void handleAfterTouchChannel(byte inChannel, byte inPressure) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addAfterTouch(deltaTicks, inPressure, inChannel);
 }
 void handlePitchBend(byte inChannel, int inValue) {
-    const auto deltaTicks = update_ticks_and_return_delta();
+    const auto deltaTicks = deltaTimeSequencer.get_delta(micros());
     writer.addPitchBend(deltaTicks, inValue, inChannel);
 }
 void reset() {
     writer.close();
-    startMicroseconds = 0;
-    lastTick = 0;
+    deltaTimeSequencer.stop();
     lastMicroseconds = 0;
     writer.setFilename("test");
     Serial.println(writer.getFilename());
-    writer.setTicksPerBeat(480);
+    writer.setTicksPerBeat(resolution);
     writer.writeHeader();
-    writer.addSetTempo(0, tempo);
+    writer.addSetTempo(0, atempo);
 }
 
 void setup() {
@@ -97,8 +82,8 @@ void setup() {
 }
 
 void loop() {
-    while(MIDI.read()){};
     unsigned long currentMicros = micros();
+    while(MIDI.read()){ lastMicroseconds = currentMicros; };
     if (lastMicroseconds > 0 && currentMicros > lastMicroseconds + 10000000) {
         Serial.println("Inactivity....");
         reset();
@@ -107,7 +92,7 @@ void loop() {
 
 #ifdef BUILD_FOR_LINUX
 int main(int, char**) {
-    SD.setSDCardFolderPath("./output");
+    SD.setSDCardFolderPath("./output", true);
     setup();
     while(true) loop();
 }
