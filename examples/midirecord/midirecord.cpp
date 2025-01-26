@@ -16,7 +16,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 SmfWriter writer;
 double atempo = 120.0;
 unsigned short resolution = 480;
-unsigned lastMicroseconds = 0;
+unsigned long lastMicroseconds = 0;
 
 DeltaTimeSequencer deltaTimeSequencer(atempo, resolution, true);
 
@@ -80,6 +80,7 @@ void setup() {
 
     MIDI.begin(MIDI_CHANNEL_OMNI);
     MIDI.turnThruOff();
+    lastMicroseconds = 0;
 }
 
 void loop() {

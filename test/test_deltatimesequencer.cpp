@@ -130,5 +130,52 @@ BOOST_AUTO_TEST_SUITE(basic_DeltaTimeSequencertest)
 
     }
 
+    BOOST_FIXTURE_TEST_CASE(can_sequence_pause1, DefaultTestFixture) {
+
+        SD.setSDCardFolderPath("./output", true);
+
+        unsigned microseconds = 10 * ONE_SECOND;
+        unsigned microsPerTick = DeltaTimeSequencer::get_microseconds_per_tick(60.0, 1);
+        DeltaTimeSequencer deltaTimeSequencer(microsPerTick, false);
+        deltaTimeSequencer.start(microseconds);
+        Serial.printf("Start time: %d\n", microseconds);
+
+        microseconds += ONE_SECOND;
+        auto delta = deltaTimeSequencer.get_delta(microseconds);
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 1);
+
+        microseconds += ONE_SECOND;
+        delta = deltaTimeSequencer.get_delta(microseconds);
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 1);
+
+        microseconds += 2 * ONE_SECOND;
+        delta = deltaTimeSequencer.get_delta(microseconds);
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 2);
+
+        microseconds += 10 * ONE_SECOND;
+        delta = deltaTimeSequencer.get_delta(microseconds);
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 10);
+
+        deltaTimeSequencer.pause(microseconds);
+        Serial.printf("Paused micros=%d\n", microseconds);
+
+        delta = deltaTimeSequencer.get_delta(microseconds);
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 0);
+
+        microseconds += 17 * ONE_SECOND;
+        deltaTimeSequencer.unpause(microseconds);
+        Serial.printf("Unpaused micros=%d\n", microseconds);
+
+        delta = deltaTimeSequencer.get_delta(microseconds); // should be 0;
+        Serial.printf("  micros=%d delta=%d\n", microseconds, delta);
+        BOOST_CHECK_EQUAL(delta, 0);
+
+    }
+
 
 BOOST_AUTO_TEST_SUITE_END()
