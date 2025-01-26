@@ -82,6 +82,10 @@ public:
         return _microsPerTick;
     }
 
+    unsigned long getInactivityMicros(const unsigned long currentMicros ) {
+        return currentMicros - (_lastTick * _microsPerTick);
+    }
+
 private:
     unsigned long _startMicroseconds = 0, _lastTick = 0, _microsPerTick = 0, _remainderTicks = 0, _pausedMicroseconds = 0;
     bool _startTimingOnFirstEvent, _paused = false;
