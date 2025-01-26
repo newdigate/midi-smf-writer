@@ -29,6 +29,7 @@ public:
         if (_startMicroseconds == 0)
             return;
         if (_paused) return;
+        _pausedMicroseconds = currentMicros;
         auto const pausedTicks = (currentMicros - _startMicroseconds)  / _microsPerTick;
         _remainderTicks = pausedTicks - _lastTick;
         _paused = true;
@@ -72,6 +73,8 @@ public:
     }
 
     unsigned long getMicroseconds(unsigned long currentMicros) const {
+        if (_paused)
+            return _pausedMicroseconds - _startMicroseconds;
         return currentMicros - _startMicroseconds;
     }
 
@@ -80,7 +83,7 @@ public:
     }
 
 private:
-    unsigned long _startMicroseconds = 0, _lastTick = 0, _microsPerTick = 0, _remainderTicks = 0;
+    unsigned long _startMicroseconds = 0, _lastTick = 0, _microsPerTick = 0, _remainderTicks = 0, _pausedMicroseconds = 0;
     bool _startTimingOnFirstEvent, _paused = false;
 };
 
