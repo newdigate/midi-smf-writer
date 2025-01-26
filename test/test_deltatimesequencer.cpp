@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(basic_DeltaTimeSequencertest)
         SD.setSDCardFolderPath("./output", true);
 
         unsigned microseconds = 10 * ONE_SECOND;
-        unsigned microsPerTick = DeltaTimeSequencer::get_microseconds_per_tick(60.0, 1);
+        unsigned microsPerTick = DeltaTimeSequencer::calculateMicrosPerTick(60.0, 1);
         DeltaTimeSequencer deltaTimeSequencer(microsPerTick, false);
         deltaTimeSequencer.start(microseconds);
         Serial.printf("Start time: %d\n", microseconds);
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_SUITE(basic_DeltaTimeSequencertest)
         SD.setSDCardFolderPath("./output", true);
 
         unsigned microseconds = 10 * ONE_SECOND;
-        unsigned microsPerTick = DeltaTimeSequencer::get_microseconds_per_tick(60.0, 1);
+        unsigned microsPerTick = DeltaTimeSequencer::calculateMicrosPerTick(60.0, 1);
         DeltaTimeSequencer deltaTimeSequencer(microsPerTick, false);
         deltaTimeSequencer.start(microseconds);
         Serial.printf("Start time: %d\n", microseconds);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_SUITE(basic_DeltaTimeSequencertest)
         SD.setSDCardFolderPath("./output", true);
 
         unsigned microseconds = 10 * ONE_SECOND;
-        unsigned microsPerTick = DeltaTimeSequencer::get_microseconds_per_tick(60.0, 1);
+        unsigned microsPerTick = DeltaTimeSequencer::calculateMicrosPerTick(60.0, 1);
         DeltaTimeSequencer deltaTimeSequencer(microsPerTick, false);
         deltaTimeSequencer.start(microseconds);
         Serial.printf("Start time: %d\n", microseconds);

@@ -11,7 +11,7 @@ public:
             _startTimingOnFirstEvent(startTimingOnFirstEvent) {
     }
     DeltaTimeSequencer(double atempo, unsigned short ticksPerBeat, bool startTimingOnFirstEvent) :
-            _microsPerTick(get_microseconds_per_tick(atempo, ticksPerBeat)),
+            _microsPerTick(calculateMicrosPerTick(atempo, ticksPerBeat)),
             _startTimingOnFirstEvent(startTimingOnFirstEvent) {
     }
 
@@ -67,12 +67,16 @@ public:
         return delta;
     }
 
-    static unsigned int get_microseconds_per_tick(double bpm, unsigned short ticksPerBeat) {
+    static unsigned int calculateMicrosPerTick(double bpm, unsigned short ticksPerBeat) {
         return (60000000.0 / bpm) / ticksPerBeat;
     }
 
     unsigned long getMicroseconds(unsigned long currentMicros) const {
         return currentMicros - _startMicroseconds;
+    }
+
+    unsigned long getMicrosPerTick() const {
+        return _microsPerTick;
     }
 
 private:
