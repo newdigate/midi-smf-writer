@@ -68,9 +68,13 @@ public:
     }
 
     static unsigned int get_microseconds_per_tick(double bpm, unsigned short ticksPerBeat) {
-        auto microsperbeat = (int)(60000000.0 / bpm) / ticksPerBeat;
-        return microsperbeat;
+        return (60000000.0 / bpm) / ticksPerBeat;
     }
+
+    unsigned long getMicroseconds(unsigned long currentMicros) const {
+        return currentMicros - _startMicroseconds;
+    }
+
 private:
     unsigned long _startMicroseconds = 0, _lastTick = 0, _microsPerTick = 0, _remainderTicks = 0;
     bool _startTimingOnFirstEvent, _paused = false;
