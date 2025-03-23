@@ -45,15 +45,7 @@ jobs:
         working-directory: ${{github.workspace}}/build
         shell: bash
         # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: cmake --build . --config $BUILD_TYPE
-      
-      - name: ls
-        working-directory: ${{github.workspace}}/build
-        shell: bash
-        # Execute the build.  You can specify a specific target with "--target <NAME>"
-        run: |
-          ls -lrt
-          pwd
+        run: cmake --build . --config $BUILD_TYPE -DBUILD_EXAMPLES=On -DBUILD_TESTS=On
 
       - name: Test
         working-directory: ${{github.workspace}}
