@@ -1,14 +1,15 @@
 #include "smfwriter.h"
 
 const byte header[] = {
-     0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06,
+     0x4d, 0x54, 0x68, 0x64,
+     0x00, 0x00, 0x00, 0x06,
      0x00, 0x00, // single-track format
      0x00, 0x01, // one track
-     0x00, 0x10, // 16 ticks per quarter
+     0x01, 0xE0, // 480 ticks per quarter 0x1E0
      0x4d, 0x54, 0x72, 0x6B
 };
 
-SmfWriter::SmfWriter(){
+SmfWriter::SmfWriter() {
 }
 
 char* SmfWriter::getFilename() {
@@ -34,8 +35,17 @@ void SmfWriter::write_buf_int(unsigned int data) {
   write_buf_byte( b );
 }
 
+void SmfWriter::write_buf_short(unsigned short data) {
+    byte b = data >> 8;
+    write_buf_byte( b );
+
+    b = data;
+    write_buf_byte( b );
+}
+
+
 void SmfWriter::write_buf_byte(byte b) {
-  if (_bufferPos > 40) {
+  if (_bufferPos > 1000) {
     flush();
   }
   _buffer[_bufferPos++] = b;
@@ -48,21 +58,64 @@ void SmfWriter::setFilename(const char* filename) {
   
   int count = 1;
   while (SD.exists(_filename)) {
-    //Serial.printf("'%s' already exists...\n", _filename);   
     sprintf(_filename, "%s%i.mid", filename, count);
     count++;
   }
-  //Serial.printf("using filename '%s'\n", _filename);
+  File file = SD.open(_filename, FILE_WRITE);
+  if (!file) {
+    Serial.println("Failed to create file!!");
+    _error = 5;
+    _hasError = true;
+    return;
+  } else {
+    file.close();
+  }
+  _bytesWritten = 0;
+  Serial.print("using filename ");
+  Serial.print(_filename);
+  Serial.println();
 }
 
 void SmfWriter::writeHeader() {
-  // first 18 bytes of static header
-  for (unsigned int i=0; i < 18; i++)
-    write_buf_byte(header[i]);
+    // first 18 bytes of static header
+    for (unsigned int i=0; i < 12; i++)
+        write_buf_byte(header[i]);
+    write_buf_short(_ticksPerBeat);
+    for (unsigned int i=14; i < 18; i++)
+        write_buf_byte(header[i]);
 
   // we write zero to the length of the midi track to begin with  
   write_buf_int(0);
   flush();
+}
+void SmfWriter::close()
+{
+    flush();
+    if (trackSize > 0) {
+        // go back and update the 0'th midi track length
+#ifdef BUILD_FOR_LINUX
+        File data = SD.open(_filename,  O_READ | O_WRITE);
+#else
+        File data = SD.open(_filename,  O_WRITE);
+#endif
+
+        if(!data) {
+            Serial.print("Failed to update length");
+        } else {
+            data.seek(18);
+
+            write_buf_int(trackSize); // plus 4 is the extra end of track marker
+            Serial.print("TrackSize ");
+            Serial.println(trackSize);
+
+            data.write(_buffer, _bufferPos);
+            Serial.print("_bufferPos ");
+            Serial.println(_bufferPos);
+            _bufferPos = 0;
+            data.close();
+            trackSize = 0;
+        }
+    }
 }
 
 void SmfWriter::write_buf_var_int(unsigned int deltaticks) {
@@ -98,6 +151,8 @@ void SmfWriter::addEvent(unsigned int deltaticks, byte *data, unsigned int lengt
     write_buf_byte(data[i]);
   }
   trackSize += length;
+  if (_bufferPos > 1000)
+      flush();
 }
 
 void SmfWriter::addNoteOnEvent(unsigned int deltaticks, byte channel, byte key, byte velocity) {
@@ -228,27 +283,50 @@ void SmfWriter::addCuePointText(unsigned int deltaticks, const char* text) {    
   addMetaText(deltaticks, 07, text);
 }
 
-void SmfWriter::flush() {
-    if (_bufferPos == 0) return;
-    File data = SD.open(_filename, O_WRITE | O_APPEND);
-    if (!data) {
-        char *notAbleToOpen = const_cast<char *>("Not able to open ");
-        Serial.print(notAbleToOpen);
-        Serial.print(_filename);
-        Serial.println();
-        return;
-    }
-    data.write(_buffer, _bufferPos);
-    data.close();
-    _bufferPos = 0;
-    if (trackSize > 0) {
-      // go back and update the 0'th midi track length
-      data = SD.open(_filename, O_READ | O_WRITE);
-      data.seek(18);
+int SmfWriter::flushWithErrorHandling() {
+  if (_bufferPos == 0)
+    return 0;
+  File data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+  /*File data = SD.open(_filename, O_READ | O_WRITE);
+  if (data.size() > 4) {
+    data.seek(data.size()-4);
+    // printf("seek to %d\n", data.size()-4);
+  }*/
 
-      write_buf_int(trackSize);
-      data.write(_buffer, _bufferPos);
-      _bufferPos = 0;
-      data.close();
-    }
+  if (!data) {
+    char *notAbleToOpen = const_cast<char *>("Not able to open ");
+    Serial.print(notAbleToOpen);
+    Serial.print(_filename);
+    Serial.println();
+    return 1;
+  }
+  size_t dataWrittenSize = data.write(_buffer, _bufferPos);
+  _bytesWritten += dataWrittenSize;
+  //printf("1. written %d\n", (unsigned) dataWrittenSize);
+  _bufferPos = 0;
+  data.close();
+
+  /*data = SD.open(_filename, O_READ | O_WRITE | O_APPEND);
+  addEndofTrack(120, 0);
+  dataWrittenSize = data.write(_buffer, _bufferPos);
+  printf("2. written %d\n", (unsigned) dataWrittenSize);
+  _bufferPos = 0;
+  data.close();
+   */
+
+  //printf("total = %d\n", (unsigned) _bytesWritten);
+  return 0;
+}
+
+void SmfWriter::flush() {
+  //Serial.print("Bytes written: ");
+  //Serial.println( _bytesWritten);
+  int flushWithErrors = flushWithErrorHandling();
+  if (flushWithErrors != 0) {
+    _error = flushWithErrors;
+    _hasError = true;
+  } else {
+      _error = 0;
+      _hasError = false;
+  }
 }
